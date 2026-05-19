@@ -145,6 +145,10 @@ found:
   memset(&p->context, 0, sizeof(p->context));
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
+  p->uid = 0;        // Default to ADMIN (UID 0)
+  p->gid = 0;
+
+
 
   return p;
 }
@@ -289,6 +293,20 @@ kfork(void)
   np->cwd = idup(p->cwd);
 
   safestrcpy(np->name, p->name, sizeof(p->name));
+
+   // IMPORTANT:
+   // In xv6, fork() only copies memory and registers,
+   // but does NOT copy custom kernel fields like uid/gid.
+   //
+   // Without this, new processes default to UID 0 (ADMIN),
+   // which breaks authentication and causes privilege escalation.
+  //
+  // We explicitly inherit credentials from parent process
+  // to maintain consistent security identity across process tree.
+  np->uid = p->uid;
+  np->gid = p->gid;
+
+
 
   pid = np->pid;
 

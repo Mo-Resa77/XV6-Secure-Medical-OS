@@ -36,6 +36,20 @@ struct dinode {
   short nlink;          // Number of links to inode in file system
   uint size;            // Size of file (bytes)
   uint addrs[NDIRECT+1];   // Data block addresses
+
+// --- added values  ---
+  ushort mode;          // Permission bits (e.g., 0644)
+  short uid;            // Owner User ID
+  short gid;            // Owner Group ID
+
+
+//padding for makefile warning errordue to change of inode size
+/* Padding to align struct dinode to 128 bytes.
+     Original(64) + Security fields(6) = 70 bytes.
+     128 - 70 = 58 bytes of padding.
+     This ensures (BSIZE % sizeof(struct dinode) == 0) when BSIZE is 1024.
+  */
+  char pad[58];
 };
 
 // Inodes per block.

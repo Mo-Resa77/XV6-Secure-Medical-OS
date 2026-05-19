@@ -24,6 +24,27 @@ fmtname(char *path)
   return buf;
 }
 
+
+
+// to  octal transformer
+char* to_octal(int n) {
+  static char buf[12];
+  int i = 10;
+  buf[i--] = '\0';
+  if (n == 0) buf[i--] = '0';
+  while (n > 0 && i >= 0) {
+    buf[i--] = (n % 8) + '0';
+    n /= 8;
+  }
+  return &buf[i+1];
+}
+
+
+
+
+
+
+
 void
 ls(char *path)
 {
@@ -46,7 +67,10 @@ ls(char *path)
   switch(st.type){
   case T_DEVICE:
   case T_FILE:
-    printf("%s %d %d %d\n", fmtname(path), st.type, st.ino, (int) st.size);
+
+    //edited printf
+    printf("%s %d %d %d UID:%d MODE:%s\n", fmtname(path), st.type, st.ino, (int) st.size, st.uid, to_octal(st.mode));
+
     break;
 
   case T_DIR:
@@ -66,7 +90,9 @@ ls(char *path)
         printf("ls: cannot stat %s\n", buf);
         continue;
       }
-      printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, (int) st.size);
+
+     //edited printf
+     printf("%s %d %d %d UID:%d MODE:%s\n", fmtname(buf), st.type, st.ino, (int) st.size, st.uid, to_octal(st.mode));
     }
     break;
   }

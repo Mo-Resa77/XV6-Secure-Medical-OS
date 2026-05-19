@@ -101,6 +101,14 @@ extern uint64 sys_unlink(void);
 extern uint64 sys_link(void);
 extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
+extern uint64 sys_getuid(void); // External declaration for getuid syscall
+extern uint64 sys_setuid(void); // External declaration for setuid syscall
+extern uint64 sys_chown(void);  // External declaration for chown syscall
+extern uint64 sys_chmod(void);  // External declaration for chmod syscall
+extern uint64 sys_audit_read(void);
+
+
+
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -126,18 +134,24 @@ static uint64 (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_getuid]  sys_getuid,  // Mapping SYS_getuid to its handler
+[SYS_setuid]  sys_setuid,  // Mapping SYS_setuid to its handler
+[SYS_chown]   sys_chown,   // Mapping SYS_chown to its handler
+[SYS_chmod]   sys_chmod,   // Mapping SYS_chmod to its handler
+[SYS_audit_read] sys_audit_read,
 };
 
-void
-syscall(void)
+
+
+
+void syscall(void)
 {
   int num;
   struct proc *p = myproc();
 
   num = p->trapframe->a7;
+
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
-    // Use num to lookup the system call function for num, call it,
-    // and store its return value in p->trapframe->a0
     p->trapframe->a0 = syscalls[num]();
   } else {
     printf("%d %s: unknown sys call %d\n",

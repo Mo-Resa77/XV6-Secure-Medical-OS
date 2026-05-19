@@ -145,6 +145,15 @@ UPROGS=\
 	$U/_logstress\
 	$U/_forphan\
 	$U/_dorphan\
+        $U/_whoami\
+        $U/_useradd\
+        $U/_userdel\
+        $U/_auth\
+        $U/_chmod\
+        $U/_chown\
+        $U/_medsetup\
+        $U/_audit_read\
+        $U/_security_test\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

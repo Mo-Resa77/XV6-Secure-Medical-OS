@@ -80,15 +80,27 @@ runcmd(struct cmd *cmd)
     fprintf(2, "exec %s failed\n", ecmd->argv[0]);
     break;
 
-  case REDIR:
-    rcmd = (struct redircmd*)cmd;
-    close(rcmd->fd);
-    if(open(rcmd->file, rcmd->mode) < 0){
-      fprintf(2, "open %s failed\n", rcmd->file);
-      exit(1);
-    }
-    runcmd(rcmd->cmd);
-    break;
+
+//edited//---->
+// user/sh.c
+case REDIR:
+  rcmd = (struct redircmd*)cmd;
+  close(rcmd ->fd);
+  if(open(rcmd->file, rcmd->mode) < 0){
+    //
+    fprintf(2, "sh: cannot write to %s (Write Permission Denied)\n", rcmd ->file);
+    exit(1);
+  }
+  runcmd(rcmd->cmd);
+  break;
+
+
+
+
+
+
+
+
 
   case LIST:
     lcmd = (struct listcmd*)cmd;
@@ -473,10 +485,10 @@ nulterminate(struct cmd *cmd)
     break;
 
   case REDIR:
-    rcmd = (struct redircmd*)cmd;
-    nulterminate(rcmd->cmd);
-    *rcmd->efile = 0;
-    break;
+  rcmd = (struct redircmd*)cmd;
+  nulterminate(rcmd->cmd);
+  *rcmd->efile = 0;
+  break;
 
   case PIPE:
     pcmd = (struct pipecmd*)cmd;

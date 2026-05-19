@@ -115,6 +115,118 @@ main(int argc, char *argv[])
   wsect(1, buf);
 
   rootino = ialloc(T_DIR);
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////
+// =====================================================================
+// Step 1: Create the directories first
+// =====================================================================
+uint patino, dosino, devino, audino;
+
+patino = ialloc(T_DIR);
+dosino = ialloc(T_DIR);
+devino = ialloc(T_DIR);
+audino = ialloc(T_DIR);
+
+// Link the directories to the Root (/)
+bzero(&de, sizeof(de));
+de.inum = xshort(patino); strcpy(de.name, "patient");
+iappend(rootino, &de, sizeof(de));
+
+de.inum = xshort(dosino); strcpy(de.name, "dosage");
+iappend(rootino, &de, sizeof(de));
+
+de.inum = xshort(devino); strcpy(de.name, "device");
+iappend(rootino, &de, sizeof(de));
+
+de.inum = xshort(audino); strcpy(de.name, "audit");
+iappend(rootino, &de, sizeof(de));
+
+// =====================================================================
+// Step 2: Create files inside the directories
+// =====================================================================
+
+// --- Patient Records File ---
+inum = ialloc(T_FILE);
+memset(&din, 0, sizeof(din));
+rinode(inum, &din);
+din.uid = xshort(1);     // PATIENT UID
+din.mode = xshort(0444); // Read-only
+winode(inum, &din);
+
+bzero(&de, sizeof(de));
+de.inum = xshort(inum); 
+strcpy(de.name, "records");
+iappend(patino, &de, sizeof(de));
+
+// --- Insulin Log File ---
+inum = ialloc(T_FILE);
+memset(&din, 0, sizeof(din));
+rinode(inum, &din);
+din.uid = xshort(2);     // DOCTOR UID
+din.mode = xshort(0644); // Doctor write + Patient read
+winode(inum, &din);
+
+bzero(&de, sizeof(de));
+de.inum = xshort(inum); 
+strcpy(de.name, "insulin.log");
+iappend(dosino, &de, sizeof(de));
+
+// --- Device Config File ---
+inum = ialloc(T_FILE);
+memset(&din, 0, sizeof(din));
+rinode(inum, &din);
+din.uid = xshort(0);     // ADMIN UID
+din.mode = xshort(0600); // Admin only
+winode(inum, &din);
+
+bzero(&de, sizeof(de));
+de.inum = xshort(inum); 
+strcpy(de.name, "config");
+iappend(devino, &de, sizeof(de));
+
+// --- System Call Audit Log File ---
+inum = ialloc(T_FILE);
+memset(&din, 0, sizeof(din));
+rinode(inum, &din);
+din.uid = xshort(0);     // ADMIN UID
+din.mode = xshort(0600); // Admin only
+winode(inum, &din);
+
+bzero(&de, sizeof(de));
+de.inum = xshort(inum); 
+strcpy(de.name, "syscall.log");
+iappend(audino, &de, sizeof(de));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   assert(rootino == ROOTINO);
 
   bzero(&de, sizeof(de));
@@ -219,6 +331,8 @@ rsect(uint sec, void *buf)
     die("read");
 }
 
+
+
 uint
 ialloc(ushort type)
 {
@@ -226,12 +340,33 @@ ialloc(ushort type)
   struct dinode din;
 
   bzero(&din, sizeof(din));
+
   din.type = xshort(type);
   din.nlink = xshort(1);
   din.size = xint(0);
+
+  // Default ownership and permissions
+  din.mode = xshort(0);
+  din.uid = xshort(0);
+  din.gid = xshort(0);
+
   winode(inum, &din);
+
   return inum;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void
 balloc(int used)

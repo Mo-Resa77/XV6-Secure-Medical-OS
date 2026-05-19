@@ -27,7 +27,15 @@ struct inode {
   short nlink;
   uint size;
   uint addrs[NDIRECT+1];
+
+// --- added values  ---
+  ushort mode;        // Permission bits
+  short uid;          // Owner UID
+  short gid;          // Owner GID
+
 };
+
+
 
 // map major device number to device functions.
 struct devsw {

@@ -107,3 +107,56 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+
+// Return the current process's user ID
+uint64
+sys_getuid(void)
+{
+  return myproc()->uid;        // Returns the UID stored in the current process structure
+}
+
+// Set the current process's user ID (to be restricted later)
+uint64
+sys_setuid(void)
+{
+  int uid;
+  argint(0, &uid);             // Retrieve the integer argument passed from user space
+  myproc()->uid = uid;         // Update the process UID to the new value
+  return 0;
+}
+
+
+
+
+// Declare external variables defined in trap.c
+extern struct audit_record audit_log[];
+extern int audit_head;
+
+uint64
+sys_audit_read(void)
+{
+  struct proc *p = myproc();
+
+  // Only admin (UID 0) can read the audit log
+  if(p->uid != 0){
+    return -1;
+  }
+
+  printf("\n--- SYSTEM AUDIT LOG (K-Buffer) ---\n");
+  printf("TIME | PID | UID | SYSCALL\n");
+
+  for(int i = 0; i < 32; i++){
+    int idx = (audit_head + i) % 32;
+    struct audit_record *ar = &audit_log[idx];
+
+    // Print only non-empty records
+    if(ar->pid > 0){
+      // Simple printf format (without complex alignment for now)
+      printf("%d | %d | %d | %s\n",
+             ar->ticks, ar->pid, ar->uid, ar->syscall_name);
+    }
+  }
+
+  return 0;
+}

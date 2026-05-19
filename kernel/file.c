@@ -103,6 +103,8 @@ filestat(struct file *f, uint64 addr)
 
 // Read from file f.
 // addr is a user virtual address.
+// Read from file f.
+// addr is a user virtual address.
 int
 fileread(struct file *f, uint64 addr, int n)
 {
@@ -113,21 +115,42 @@ fileread(struct file *f, uint64 addr, int n)
 
   if(f->type == FD_PIPE){
     r = piperead(f->pipe, addr, n);
-  } else if(f->type == FD_DEVICE){
+  } 
+  else if(f->type == FD_DEVICE){
     if(f->major < 0 || f->major >= NDEV || !devsw[f->major].read)
       return -1;
     r = devsw[f->major].read(1, addr, n);
-  } else if(f->type == FD_INODE){
+  } 
+  else if(f->type == FD_INODE){
     ilock(f->ip);
+
+    // --- Phase 2.3: Security Enforcement (Read Permission) ---
+    // Non-admin users must have read permission
+    if(myproc()->uid != 0 && myproc()->uid != f->ip->uid){
+      if(!(f->ip->mode & 0004)){   // Others read permission bit
+        iunlock(f->ip);
+        return -1;                 // Permission denied
+      }
+    }
+
     if((r = readi(f->ip, 1, addr, f->off, n)) > 0)
       f->off += r;
+
     iunlock(f->ip);
-  } else {
+  } 
+  else {
     panic("fileread");
   }
 
   return r;
 }
+
+
+
+
+
+// Write to file f.
+// addr is a user virtual address.
 
 // Write to file f.
 // addr is a user virtual address.
@@ -141,17 +164,16 @@ filewrite(struct file *f, uint64 addr, int n)
 
   if(f->type == FD_PIPE){
     ret = pipewrite(f->pipe, addr, n);
-  } else if(f->type == FD_DEVICE){
+  } 
+  else if(f->type == FD_DEVICE){
     if(f->major < 0 || f->major >= NDEV || !devsw[f->major].write)
       return -1;
     ret = devsw[f->major].write(1, addr, n);
-  } else if(f->type == FD_INODE){
-    // write a few blocks at a time to avoid exceeding
-    // the maximum log transaction size, including
-    // i-node, indirect block, allocation blocks,
-    // and 2 blocks of slop for non-aligned writes.
+  } 
+  else if(f->type == FD_INODE){
     int max = ((MAXOPBLOCKS-1-1-2) / 2) * BSIZE;
     int i = 0;
+
     while(i < n){
       int n1 = n - i;
       if(n1 > max)
@@ -159,22 +181,32 @@ filewrite(struct file *f, uint64 addr, int n)
 
       begin_op();
       ilock(f->ip);
+
+      // --- Phase 2.3: Security Enforcement (Write Permission) ---
+      if(myproc()->uid != 0 && myproc()->uid != f->ip->uid){
+        if(!(f->ip->mode & 0002)){   // Others write permission bit
+          iunlock(f->ip);
+          end_op();
+          return -1;                  // Permission denied
+        }
+      }
+
       if ((r = writei(f->ip, 1, addr + i, f->off, n1)) > 0)
         f->off += r;
+
       iunlock(f->ip);
       end_op();
 
       if(r != n1){
-        // error from writei
         break;
       }
       i += r;
     }
     ret = (i == n ? n : -1);
-  } else {
+  } 
+  else {
     panic("filewrite");
   }
 
   return ret;
 }
-

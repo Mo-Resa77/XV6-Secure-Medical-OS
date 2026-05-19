@@ -104,4 +104,33 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+
+  int uid;                     // User ID
+  int gid;                     // Group ID
+
+
 };
+
+
+
+
+
+
+
+
+// Phase 3.2: Audit Structure
+struct audit_record {
+  int pid;
+  int uid;
+  uint ticks;                    // Timestamp (in ticks)
+  char syscall_name[16];         // Store syscall name for easy reading
+};
+
+#define AUDIT_BUF_SIZE 32        // Buffer size (holds the last 32 audit records)
+
+
+
+
+
+
+

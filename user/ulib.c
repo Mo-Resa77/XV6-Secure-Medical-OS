@@ -159,3 +159,22 @@ sbrklazy(int n) {
   return sys_sbrk(n, SBRK_LAZY);
 }
 
+
+// Stronger hashing function using substitution and salt
+// Requirement 1.3: Passwords must be hashed before storage
+void hash_password(char *plain, char *hashed) {
+    int salt = 7; // Secret salt value to increase entropy
+    int i;
+    for(i = 0; plain[i] != '\0'; i++) {
+        // Shift each character by the salt and XOR with a key
+        // This ensures plaintext is not easily recognizable
+        hashed[i] = (plain[i] + salt) ^ 0x4B; 
+    }
+    hashed[i] = '\0'; // Ensure the hashed string is null-terminated
+}
+
+
+
+
+
+

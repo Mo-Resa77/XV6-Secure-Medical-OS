@@ -20,3 +20,8 @@
 #define SYS_link   19
 #define SYS_mkdir  20
 #define SYS_close  21
+#define SYS_getuid 22         // System call number for getting current user identity
+#define SYS_setuid 23         // System call number for setting user identity (Login/Su)
+#define SYS_chown  24  //  chown
+#define SYS_chmod  25  //  chmod
+#define SYS_audit_read 26

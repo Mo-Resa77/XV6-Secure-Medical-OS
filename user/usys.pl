@@ -42,3 +42,8 @@ entry("getpid");
 entry("sbrk");
 entry("pause");
 entry("uptime");
+entry("getuid"); # Generate assembly stub for getuid system call
+entry("setuid"); # Generate assembly stub for setuid system call
+entry("chown");  # Generate assembly stub for chown system call
+entry("chmod");  # Generate assembly stub for chmod system call
+entry("audit_read");

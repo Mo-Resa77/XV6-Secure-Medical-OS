@@ -24,6 +24,12 @@ int getpid(void);
 char* sys_sbrk(int,int);
 int pause(int);
 int uptime(void);
+int getuid(void);          // User-level prototype for getuid
+int setuid(int);           // User-level prototype for setuid
+int chown(const char*, int); // User-level prototype for chown
+int chmod(const char*, int); // User-level prototype for chmod
+int audit_read(void);
+
 
 // ulib.c
 int stat(const char*, struct stat*);
@@ -39,6 +45,11 @@ int memcmp(const void *, const void *, uint);
 void *memcpy(void *, const void *, uint);
 char* sbrk(int);
 char* sbrklazy(int);
+void hash_password(char*, char*); // Prototype for password hashing utility
+
+
+
+
 
 // printf.c
 void fprintf(int, const char*, ...) __attribute__ ((format (printf, 2, 3)));
@@ -47,3 +58,8 @@ void printf(const char*, ...) __attribute__ ((format (printf, 1, 2)));
 // umalloc.c
 void* malloc(uint);
 void free(void*);
+
+
+
+
+

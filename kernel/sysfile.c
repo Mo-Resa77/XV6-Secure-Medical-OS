@@ -301,6 +301,10 @@ create(char *path, short type, short major, short minor)
   return 0;
 }
 
+
+
+
+
 uint64
 sys_open(void)
 {
@@ -309,6 +313,7 @@ sys_open(void)
   struct file *f;
   struct inode *ip;
   int n;
+  struct proc *p = myproc();
 
   argint(1, &omode);
   if((n = argstr(0, path, MAXPATH)) < 0)
@@ -328,11 +333,38 @@ sys_open(void)
       return -1;
     }
     ilock(ip);
-    if(ip->type == T_DIR && omode != O_RDONLY){
+  }
+
+  // --- Phase 2.3: Security Enforcement (Permission Checking) ---
+  if(p->uid != 0){        // Admin (UID 0) bypasses permission checks
+    int allowed = 0;
+    int writing = (omode & O_WRONLY) || (omode & O_RDWR) || (omode & O_TRUNC);
+    int reading = (omode == O_RDONLY) || (omode & O_RDWR);
+
+    if(p->uid == ip->uid){        // Owner permission check
+      allowed = 1;
+      if(writing && !(ip->mode & 0200)) allowed = 0;   // Owner write permission
+      if(reading && !(ip->mode & 0400)) allowed = 0;   // Owner read permission
+    }
+    else {                        // Others permission check
+      allowed = 1;
+      if(writing && !(ip->mode & 0002)) allowed = 0;   // Others write permission
+      if(reading && !(ip->mode & 0004)) allowed = 0;   // Others read permission
+    }
+
+    if(!allowed){
       iunlockput(ip);
       end_op();
-      return -1;
+      return -1;                  // Permission denied
     }
+  }
+  // -----------------------------------------------------
+
+  // Directory can only be opened in read-only mode
+  if(ip->type == T_DIR && omode != O_RDONLY){
+    iunlockput(ip);
+    end_op();
+    return -1;
   }
 
   if(ip->type == T_DEVICE && (ip->major < 0 || ip->major >= NDEV)){
@@ -342,8 +374,7 @@ sys_open(void)
   }
 
   if((f = filealloc()) == 0 || (fd = fdalloc(f)) < 0){
-    if(f)
-      fileclose(f);
+    if(f) fileclose(f);
     iunlockput(ip);
     end_op();
     return -1;
@@ -356,6 +387,7 @@ sys_open(void)
     f->type = FD_INODE;
     f->off = 0;
   }
+
   f->ip = ip;
   f->readable = !(omode & O_WRONLY);
   f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
@@ -369,6 +401,33 @@ sys_open(void)
 
   return fd;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 uint64
 sys_mkdir(void)
@@ -503,3 +562,94 @@ sys_pipe(void)
   }
   return 0;
 }
+
+
+/////////////////////////////////
+
+// --- Requirement 2.2: Change file ownership ---
+uint64
+sys_chown(void)
+{
+  char path[MAXPATH];
+  int uid;
+  struct inode *ip;
+
+  if(argstr(0, path, MAXPATH) < 0)
+    return -1;
+
+  argint(1, &uid);
+
+  // --- Start Transaction ---
+  begin_op();
+
+  if((ip = namei(path)) == 0){
+    end_op();
+    return -1;
+  }
+
+  ilock(ip);
+
+  // Permission check: Only Admin (UID 0) or current owner can change ownership
+  if(myproc()->uid != 0 && myproc()->uid != ip->uid){
+    iunlockput(ip);
+    end_op();        // End transaction on failure
+    return -1;       // Permission denied
+  }
+
+  ip->uid = uid;
+  iupdate(ip);       // This was causing panic because it needs to be inside a transaction
+  iunlockput(ip);
+
+  end_op();          // --- End Transaction ---
+
+  return 0;
+}
+
+// --- Requirement 2.2: Change file permissions ---
+uint64
+sys_chmod(void)
+{
+  char path[MAXPATH];
+  int mode;
+  struct inode *ip;
+
+  if(argstr(0, path, MAXPATH) < 0)
+    return -1;
+
+  argint(1, &mode);
+
+  begin_op();        // --- Start Transaction ---
+
+  if((ip = namei(path)) == 0){
+    end_op();
+    return -1;
+  }
+
+  ilock(ip);
+
+  // Permission check: Only Admin (UID 0) or current owner can change permissions
+  if(myproc()->uid != 0 && myproc()->uid != ip->uid){
+    iunlockput(ip);
+    end_op();
+    return -1;       // Permission denied
+  }
+
+  ip->mode = mode;
+  iupdate(ip);
+  iunlockput(ip);
+
+  end_op();          // --- End Transaction ---
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
