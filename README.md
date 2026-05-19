@@ -4,7 +4,7 @@ A hardened, highly secure version of the xv6 operating system customized for cri
 
 ---
 
-# 🚀 Key Features Implemented
+# Key Features Implemented
 
 ## 🛡️ Phase 1 & 2: User Identity & Role-Based Access Control (RBAC)
 
@@ -50,7 +50,7 @@ A hardened, highly secure version of the xv6 operating system customized for cri
 
 ---
 
-# 🧪 Bonus Phase: Automated Security Compliance & Test Matrix
+# + Bonus Phase: Automated Security Compliance & Test Matrix
 
 * **Single-Command Automated Validation:**
   Running:
@@ -117,7 +117,7 @@ Recommended platforms:
 
 ---
 
-# ⚡ Quick Start
+#  Quick Start
 
 ## 1) Enter Project Directory
 
@@ -210,7 +210,7 @@ System meets Medical Device Security Standards.
 
 ---
 
-# 📜 Academic Verification & Compliance Matrix
+# Verification & Compliance Matrix
 
 | Requirement | Description                                                  | Verification Method                                     | Status     |
 | ----------- | ------------------------------------------------------------ | ------------------------------------------------------- | ---------- |
