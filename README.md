@@ -4,6 +4,8 @@ A hardened, highly secure version of the xv6 operating system customized for cri
 
 ---
 
+# By Mohamed Magdy Hagras , Reg. 221010763 , Os Security Course  , Lecturers : Prof.Dr Ayman adel - Ta Abdelrahman soliman 
+
 # Key Features Implemented
 
 ## 🛡️ Phase 1 & 2: User Identity & Role-Based Access Control (RBAC)
