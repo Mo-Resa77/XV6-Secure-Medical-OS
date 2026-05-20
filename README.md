@@ -4,7 +4,7 @@ A hardened, highly secure version of the xv6 operating system customized for cri
 
 ---
 
-# By Mohamed Magdy Hagras , Reg. 221010763 , Os Security Course  , Lecturers : Prof.Dr Ayman adel - Ta Abdelrahman soliman 
+# By Mohamed Magdy Hagras, Reg. 221010763, CCY4304, Lecturers : Prof.Dr Ayman adel - Ta Abdelrahman soliman .
 
 # Key Features Implemented
 
